@@ -15,6 +15,7 @@ const decreaseIcon = unsafeSVG(`<svg xmlns="http://www.w3.org/2000/svg" width="1
 export class CommQuantity extends LitElement {
   static formAssociated = true;
   static shadowRootOptions = {...LitElement.shadowRootOptions, delegatesFocus: true};
+  inputRef = createRef();
   static properties = {
     value: {type: Number},
     disabled: {type: Boolean,attribute: "disabled"},
@@ -22,25 +23,32 @@ export class CommQuantity extends LitElement {
     max: {type: Number},
     step: {type: Number},
     type: {type: String},
-    stepper: {type: Boolean, attribute: "stepper"},
+    stepper: {type: Boolean, attribute: "stepper"},    
+    readonly: {type: Boolean}
+    
   };
   constructor () {
     super()
-    this.value = 1;
+    this.value = 1;    
     this.type = "number";
-    this.internals = this.attachInternals();
+    this.internals = this.attachInternals();  
     this.stepper = false;
+    this.addEventListener('focus', (e) => {   
+      const input = this.inputRef.value     
+      input.focus({ focusVisible: true })
+    });
+   
   }
-
-  inputRef = createRef();
 
   _increaseAmount = () => {    
     const step = this.step ?? 1;
-    this.value = ifDefined(this.max) ? this.value + step > this.max ? this.max : this.value + step : this.value + step;
+    const value = ifDefined(this.max) ? this.value + step > this.max ? this.max : this.value + step : this.value + step; 
+    this.value = parseFloat(value.toFixed(2));
   }
   _decreaseAmount = () => {  
-    const step = this.step ?? 1;   
-    this.value = ifDefined(this.min) ? this.value - step < this.min ? this.min : this.value - step : this.value - step;
+    const step = this.step ?? 1;  
+    const value = ifDefined(this.min) ? this.value - step < this.min ? this.min : this.value - step : this.value - step;
+    this.value = parseFloat(value.toFixed(2));
   }
   _onKeyDown = (e) => {   
     if(e.key === "ArrowUp") {
@@ -54,22 +62,24 @@ export class CommQuantity extends LitElement {
   
   _onChange = (e) => {
     e.preventDefault();   
-    const step = this.step ?? 1;   
-    let value = parseFloat(e.currentTarget.value) ?? 1;
+    const step = this.step ?? 1;    
+    const currentValue = !Number.isNaN(parseFloat(e.currentTarget.value)) ? parseFloat(e.currentTarget.value) : 1; 
+    let value = parseFloat(currentValue.toFixed(2)) ?? 1;
     value = ifDefined(this.max) ? value > this.max ? this.max : value : value;    
-    value = ifDefined(this.min) ? value < this.min ? this.min : value : value;
-    value = value % step !== 0 ? Math.ceil(value/step)*step : value;
+    value = ifDefined(this.min) ? value < this.min ? this.min : value : value;   
+    value = parseFloat((value % step).toFixed(2)) !== 0 ? parseFloat((Math.ceil(value/step)*step).toFixed(2)) : value;  
     this.value = value;
-    const input = this.inputRef.value;
+    const input = this.inputRef.value; 
     input.value = value;
   }
   render () {
-    const classes = { hidesteps: this.stepper};  
+    const inputmode = parseFloat(((this.step ?? 1) % 1).toFixed(2)) !== 0 ? "decimal" : "numeric";
+    const classes = { hidesteps: this.stepper};      
     return html`
       <div class="comm-container">
-        ${when(this.stepper, ()=>html`<button type="button" aria-label="decrease quantity" @click=${this._decreaseAmount}>${decreaseIcon}</button>`)}        
-        <input ${ref(this.inputRef)} type=${this.type} min=${ifDefined(this.min)} max=${ifDefined(this.max)} step=${ifDefined(this.step)} ?disabled=${this.disabled} inputmode="decimal" .value=${this.value} @keydown=${e=>this._onKeyDown(e)} @change=${e=>this._onChange(e)} class=${classMap(classes)} />
-        ${when(this.stepper, ()=>html`<button type="button" aria-label="increase quantity" @click=${this._increaseAmount}>${increaseIcon}</button>`)}
+        ${when(this.stepper, ()=>html`<button type="button" aria-label="decrease quantity" ?disabled=${this.readonly || this.disabled} @click=${this._decreaseAmount}>${decreaseIcon}</button>`)}        
+        <input ${ref(this.inputRef)} type=${this.type} min=${ifDefined(this.min)} max=${ifDefined(this.max)} step=${ifDefined(this.step)} ?disabled=${this.disabled} ?readonly=${this.readonly} inputmode="${inputmode}" .value=${this.value} @keydown=${e=>this._onKeyDown(e)} @change=${e=>this._onChange(e)} class=${classMap(classes)} autofocus />
+        ${when(this.stepper, ()=>html`<button type="button" aria-label="increase quantity" ?disabled=${this.readonly || this.disabled} @click=${this._increaseAmount}>${increaseIcon}</button>`)}
       </div>
     `
   }
@@ -79,8 +89,8 @@ export class CommQuantity extends LitElement {
           display: inline-flex;
           align-items: center;
       }
-      :host:focus{
-          box-shadow: 0 0 2px #eee;
+      :host([disabled]){
+          opacity: 0.5;
       }
       .comm-container {
           display: flex;
@@ -91,18 +101,27 @@ export class CommQuantity extends LitElement {
 
       button {
           display: inline-flex;
-          border: var(--stepper-border, none);
-          background: var(--element-background, transparent);
+          border: var(--comm-stepper-border, none);
+          background: var(--comm-element-background, transparent);
           align-items: center;
           margin: 0;
-          padding: 0;
+          padding: 0 var(--comm-stepper-padding, 0.25rem);
       }
 
       input {
+          margin: 0;
+          width: var(--comm-element-width, 5ch);
           text-align: center;
-          border: var(--element-border, none);    
+          border: var(--comm-element-border, none);    
           background-color: transparent;
+          line-height: var(--comm-line-height, 1.5);
       }     
+      input:disabled, input:read-only {
+          user-select: none;
+          -moz-user-select: none;
+          -webkit-user-select: none;          
+          cursor: not-allowed;
+      }
       input:focus {
           outline: none;
       }

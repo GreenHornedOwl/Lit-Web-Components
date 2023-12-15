@@ -10,6 +10,13 @@
     <script type="module" src="/src/comm-quantity.js"></script>
   </head>
   <body>
-    <comm-quantity value="2" min="2" max="20" step="2" stepper="true" ></comm-quantity>
+    <comm-quantity value="2" min="2" max="20" step="2" stepper="true"></comm-quantity>
+    <button type="button" class="focus">Focus</button>
+  <script>
+    document.querySelector(".focus")?.addEventListener("click", ()=>{
+      document.querySelector('comm-quantity').focus();
+    })
+     
+  </script>
   </body>
 </html>

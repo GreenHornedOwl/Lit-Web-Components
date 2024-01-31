@@ -128,7 +128,7 @@ export class CommMultipleSelector extends LitElement {
     this.internals = this.attachInternals();
     this.valueArray = [];
     this.value = "";
-    this.items = demoData;
+    this.items = [];
     this._filteredItems = [];
     this._filteredItemsOpened = false;
     this._selectedItems = [];

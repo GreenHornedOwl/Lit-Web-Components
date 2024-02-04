@@ -138,4 +138,4 @@ export class CommQuantity extends LitElement {
   `  
 }
 
-customElements.define('comm-quantity', CommQuantity);
+window.customElements.define('comm-quantity', CommQuantity);

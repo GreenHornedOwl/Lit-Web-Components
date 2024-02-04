@@ -1,4 +1,4 @@
-﻿import { LitElement, css, html } from 'lit';
+import { LitElement, css, html } from 'lit';
 import {repeat} from 'lit/directives/repeat.js';
 import {styleMap} from 'lit/directives/style-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
@@ -13,97 +13,23 @@ const deleteIcon = unsafeSVG(`<svg xmlns="http://www.w3.org/2000/svg" height="24
 const dragIcon = unsafeSVG(`
 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M360-160q-33 0-56.5-23.5T280-240q0-33 23.5-56.5T360-320q33 0 56.5 23.5T440-240q0 33-23.5 56.5T360-160Zm240 0q-33 0-56.5-23.5T520-240q0-33 23.5-56.5T600-320q33 0 56.5 23.5T680-240q0 33-23.5 56.5T600-160ZM360-400q-33 0-56.5-23.5T280-480q0-33 23.5-56.5T360-560q33 0 56.5 23.5T440-480q0 33-23.5 56.5T360-400Zm240 0q-33 0-56.5-23.5T520-480q0-33 23.5-56.5T600-560q33 0 56.5 23.5T680-480q0 33-23.5 56.5T600-400ZM360-640q-33 0-56.5-23.5T280-720q0-33 23.5-56.5T360-800q33 0 56.5 23.5T440-720q0 33-23.5 56.5T360-640Zm240 0q-33 0-56.5-23.5T520-720q0-33 23.5-56.5T600-800q33 0 56.5 23.5T680-720q0 33-23.5 56.5T600-640Z" fill="currentColor"/></svg>`)
 
-const  move = (array, from, to) => {
-  if( to === from ) return array;
 
-  var target = array[from];
-  var increment = to < from ? -1 : 1;
 
-  for(var k = from; k != to; k += increment){
-    array[k] = array[k + increment];
+const arrayMove = (array, from, to) => {
+  const newArr = [...array];
+  if(from >= to) {
+    newArr.splice(to, 0, newArr.splice(from, 1)[0]);  
+  } else {
+    newArr.splice(to-1, 0, newArr.splice(from, 1)[0]);
   }
-  array[to] = target;
-  return array;
-}
+  
+  
+  return newArr;
+};
 
-const demoData = [
-  {
-    "Name": "Flowers - Miley Cyrus",
-    "Value": "10"
-  },
-  {
-    "Name": "Sprinter - Dave & Central Cee",
-    "Value": "12"
-  },
-  {
-    "Name": "Escapism - Raye ft. 070 Shake",
-    "Value": "14"
-  },
-  {
-    "Name": "Anti-Hero - Taylor Swift",
-    "Value": "16"
-  },
-  {
-    "Name": "Running Up That Hill (A Deal With God) - Kate Bush",
-    "Value": "18"
-  },
-  {
-    "Name": "Heat Waves - Glass Animals",
-    "Value": "20"
-  },
-  {
-    "Name": "As It Was - Harry Styles",
-    "Value": "22"
-  },
-  {
-    "Name": "Stay - The Kid LAROI & Justin Bieber",
-    "Value": "24"
-  },
-  {
-    "Name": "We Don't Talk About Bruno - Encanto",
-    "Value": "26"
-  },
-  {
-    "Name": "Little Bit of Love - Ed Sheeran",
-    "Value": "28"
-  },
-  {
-    "Name": "Good 4 U - Olivia Rodrigo",
-    "Value": "30"
-  },
-  {
-    "Name": "Butter - BTS",
-    "Value": "32"
-  },
-  {
-    "Name": "Levitating (feat. DaBaby) - Dua Lipa",
-    "Value": "34"
-  },
-  {
-    "Name": "Save Your Tears - The Weeknd (feat. Ariana Grande)",
-    "Value": "36"
-  },
-  {
-    "Name": "Peaches - Justin Bieber & Daniel Caesar & Giveon",
-    "Value": "38"
-  },
-  {
-    "Name": "Leave The Door Open - Silk Sonic",
-    "Value": "40"
-  },
-  {
-    "Name": "MONTERO (Call Me by Your Name) - Lil Nas X",
-    "Value": "42"
-  },
-  {
-    "Name": "Easy on Me - Adele",
-    "Value": "44"
-  }
-];
 
-console.log("loading web components")
 
-export class CommMultipleSelector extends LitElement {
+export class CommMultipleSelectorRaw extends LitElement {
   static formAssociated = true;
   static properties = {
     value: {type: String},
@@ -127,16 +53,29 @@ export class CommMultipleSelector extends LitElement {
     this.internals = this.attachInternals();
     this.valueArray = [];
     this.value = "";
-    this.items = demoData;
+    this.items = [];
     this._filteredItems = [];
     this._filteredItemsOpened = false;
     this._selectedItems = [];
   }
 
-  firstUpdated() {
-    this._filteredItems = this.items;
-    this._selectedItems = this.items.filter(item => this.valueArray.includes(item.Value)).sort((a,b) => this.valueArray.indexOf(a.Value) - this.valueArray.indexOf(b.Value));
+  get _slottedChildren() {
+    const slot = this.shadowRoot.querySelector('slot');   
+    return slot.assignedNodes({flatten: true}).filter((node) => node.nodeName === 'COMM-MULTIPLE-SELECTOR-OPTION');
   }
+
+  firstUpdated() {      
+    const selectedNodes = this._slottedChildren.filter(node => {     
+      return this.valueArray.includes(node.getAttribute("value"));
+    });
+    //sets the selected items
+    this._selectedItems = selectedNodes.reduce((r,v)=>[...r,{"name":v.getAttribute("label"),"value":v.getAttribute("value")}],[]).sort((a,b) => this.valueArray.indexOf(a.value) - this.valueArray.indexOf(b.value));
+    //filter already selected nodes
+    selectedNodes.forEach(node => {
+      node.style.display = "none";
+    })
+  }
+  
   willUpdate(changedProperties) {
     // only need to check changed properties for an expensive computation.
     if (changedProperties.has('valueArray') ) {
@@ -146,27 +85,72 @@ export class CommMultipleSelector extends LitElement {
 
   _onSearchInput = (e) => {
     const value = e.currentTarget.value;    
-    this._filteredItems = this.items.filter(item => item.Name.toLowerCase().includes(value.toLowerCase()) && ![...this.valueArray].find(v=> v===item.Value));
+    const selectedNodes = this._slottedChildren.filter(item => item.getAttribute("label").toLowerCase().includes(value.toLowerCase()) && ![...this.valueArray].find(v=> v===item.getAttribute("value")));
+    this._slottedChildren.forEach(node => {
+      node.style.display = "none";
+      node.classList.remove("focused");
+    });   
+    selectedNodes.forEach(node => {
+      node.style.display = "flex";
+    });    
   }
-  _onFocusInput = e => {
+  _onFocusInput = e => {    
     const value = e.currentTarget.value;
-    this._filteredItems = value !== "" ? this.items.filter(item => item.Name.toLowerCase().includes(value.toLowerCase()) && ![...this.valueArray].find(v => v===item.Value)) : this.items.filter(item => ![...this.valueArray].find(v => v===item.Value));
+    let filteredNodes = this._slottedChildren;
+    if(value!=="") {
+      filteredNodes = this._slottedChildren.filter(item => item.getAttribute("label").toLowerCase().includes(value.toLowerCase()) && ![...this.valueArray].find(v=> v===item.getAttribute("value")) || this.valueArray.includes(item.getAttribute("value")));          
+    } else {
+      filteredNodes = this._slottedChildren.filter(item => [...this.valueArray].find(v=> v===item.getAttribute("value")));     
+    } 
+    this._slottedChildren.forEach(node => {
+      node.style.display = "flex" ;
+      node.classList.remove("focused");
+    });   
+    filteredNodes.forEach(node => {
+      node.style.display = "none"; 
+    });
+    
     this._filteredItemsOpened = true;
   }
   _onClickOption = e => {
-    const {value} = e.currentTarget.dataset;   
+    
+    const {value} = e.detail ?? "";  
     const name = this.inputRef.value.value;
     this.valueArray = [...this.valueArray].find(v=>v===value) ? this.valueArray : [...this.valueArray, value];
-    this._filteredItems = name !== "" ? this.items.filter(item => item.Name.toLowerCase().includes(name.toLowerCase()) && ![...this.valueArray].find(v => v===item.Value)) : this.items.filter(item => ![...this.valueArray].find(v => v===item.Value));
-    this._selectedItems = this.items.filter(item => this.valueArray.includes(item.Value)).sort((a,b) => this.valueArray.indexOf(a.Value) - this.valueArray.indexOf(b.Value));
+    
+    let filteredNodes = this._slottedChildren;
+    if(name!=="") {
+      filteredNodes = this._slottedChildren.filter(item => item.getAttribute("label").toLowerCase().includes(name.toLowerCase()) && ![...this.valueArray].find(v=> v===item.getAttribute("value")) || this.valueArray.includes(item.getAttribute("value")));          
+    } else {
+      filteredNodes = this._slottedChildren.filter(item => [...this.valueArray].find(v=> v===item.getAttribute("value")));     
+    } 
+    this._slottedChildren.forEach(node => {
+      node.style.display = "flex" ;
+      node.classList.remove("focused");
+    });   
+    filteredNodes.forEach(node => {
+      node.style.display = "none";
+    });
+
+
+    this._selectedItems = this._slottedChildren.filter(item => this.valueArray.includes(item.getAttribute("value"))).reduce((r,v)=>[...r,{"name":v.getAttribute("label"),"value":v.getAttribute("value")}],[]).sort((a,b) => this.valueArray.indexOf(a.value) - this.valueArray.indexOf(b.value));
     this.inputRef.value.focus();
   }
   
   _deleteSelectedItem = e => {
     const value = e.currentTarget.dataset.value;
     this._filteredItemsOpened = false;
-    this.valueArray = [...this.valueArray].filter(v=>v!==value);
-    this._selectedItems = this.items.filter(item => this.valueArray.includes(item.Value)).sort((a,b) => this.valueArray.indexOf(a.Value) - this.valueArray.indexOf(b.Value));
+    this.valueArray = [...this.valueArray].filter(v=>v!==value);    
+    const filteredNodes = this._slottedChildren.filter(item => [...this.valueArray].find(v=> v===item.getAttribute("value")));      
+    console.log({filteredNodes});
+    [...this._slottedChildren].forEach(node => {      
+      node.style.display = "flex";
+      node.classList.remove("focused");
+    }); 
+    filteredNodes.forEach(node => {
+      node.style.display = "none";
+    });
+    this._selectedItems = filteredNodes.reduce((r,v)=>[...r,{"name":v.getAttribute("label"),"value":v.getAttribute("value")}],[]).sort((a,b) => this.valueArray.indexOf(a.value) - this.valueArray.indexOf(b.value));
   }
 
   _focusResult({children,key}) {
@@ -178,11 +162,9 @@ export class CommMultipleSelector extends LitElement {
 
   _onKeyUp(e) {
     const key = e.key;
-    const childNodes = this.shadowRoot
-    .querySelectorAll('.filtered-container .item');
     if (key === "ArrowDown" || key === "ArrowUp") {
       e.preventDefault();     
-      this._focusResult({children: childNodes, key});
+      this._focusResult({children: this._slottedChildren.filter(item => !this.valueArray.includes(item.getAttribute("value"))), key});
       return;
     }
   }
@@ -197,15 +179,22 @@ export class CommMultipleSelector extends LitElement {
       e.stopImmediatePropagation();
       e.preventDefault();
       
-      const focusedNode = [...this.shadowRoot.querySelectorAll('.filtered-container .item')].find(node => node.classList.contains("focused"));
+      const focusedNode = this._slottedChildren.find(node => node.classList.contains("focused"));
      
-      if(focusedNode) {       
-        const value = focusedNode.dataset.value;
-        const name = e.currentTarget.value;
+      if(focusedNode) {          
+        const value = focusedNode.getAttribute("value");
+       
         this.valueArray = [...this.valueArray].find(v=>v===value) ? this.valueArray : [...this.valueArray, value];
-        
-        this._filteredItems = name !== "" ? this.items.filter(item => item.Name.toLowerCase().includes(name.toLowerCase()) && ![...this.valueArray].find(v => v===item.Value)) : this.items.filter(item => ![...this.valueArray].find(v => v===item.Value));        
-        this._selectedItems = this.items.filter(item => this.valueArray.includes(item.Value)).sort((a,b) => this.valueArray.indexOf(a.Value) - this.valueArray.indexOf(b.Value));
+        const selectedItems = this._slottedChildren.filter(node => [...this.valueArray].find(v=> v===node.getAttribute("value")));
+        this._slottedChildren.forEach(node => {
+          node.style.display = "flex" ;
+          node.classList.remove("focused");
+        });   
+        selectedItems.forEach(node => {
+          node.style.display = "none";          
+        });
+
+        this._selectedItems = selectedItems.reduce((r,v)=>[...r,{"name":v.getAttribute("label"),"value":v.getAttribute("value")}],[]).sort((a,b) => this.valueArray.indexOf(a.value) - this.valueArray.indexOf(b.value));
       }
     } else if (e.key === "Escape") {
       this._filteredItemsOpened = false;
@@ -217,12 +206,12 @@ export class CommMultipleSelector extends LitElement {
 
   _handleGeneralClick = (e) => {
     let elements = e.composedPath().filter((el) => {
-      return el.tagName !== undefined && el.closest('comm-multiple-selector') !== null;
+      return el.tagName !== undefined && el.closest('comm-multiple-selector-raw') !== null;
       //return el.tagName !== undefined && el.tagName.includes("comm-menu-selector")
     });
     // console.log(elements,e.composedPath());
     if (elements.length === 0) {
-      [...document.querySelectorAll('comm-multiple-selector')]
+      [...document.querySelectorAll('comm-multiple-selector-raw')]
       .filter((n) => n !== elements[0])
       .forEach((el) => {
         el._filteredItemsOpened = false;
@@ -273,9 +262,18 @@ export class CommMultipleSelector extends LitElement {
     }
    
     const itemIndex = [...e.target.closest('.results').querySelectorAll('.drag-zone')].findIndex(item => item === e.target);
+   
     const {value} = this.dragSrcEl.querySelector('.item button').dataset;
-    this.valueArray = move([...this.valueArray], this.valueArray.findIndex(v => v === value), itemIndex > 1 ? itemIndex - 1 : itemIndex).filter(v => v !== undefined);
-    this._selectedItems = this.items.filter(item => this.valueArray.includes(item.Value)).sort((a, b) => this.valueArray.indexOf(a.Value) - this.valueArray.indexOf(b.Value));
+    console.log({from: this.valueArray.findIndex(v => v === value),to:itemIndex, array: this.valueArray})
+    this.valueArray = arrayMove([...this.valueArray], this.valueArray.findIndex(v => v === value), itemIndex).filter(v => v !== undefined);
+
+
+    const filteredNodes = this._slottedChildren.filter(item => [...this.valueArray].find(v=> v===item.getAttribute("value")));  
+    this._selectedItems = filteredNodes.reduce((r,v)=>[...r,{"name":v.getAttribute("label"),"value":v.getAttribute("value")}],[]).sort((a,b) => this.valueArray.indexOf(a.value) - this.valueArray.indexOf(b.value));
+    //this._selectedItems = this.items.filter(item => this.valueArray.includes(item.Value)).sort((a, b) => this.valueArray.indexOf(a.Value) - this.valueArray.indexOf(b.Value));
+
+
+
     this.dragSrcEl.style.removeProperty('opacity');
     e.target.classList.remove('over');
     
@@ -300,9 +298,9 @@ export class CommMultipleSelector extends LitElement {
          ${when(this._selectedItems.length > 0, () => html`
            <div class="results">
                <div class="drag-zone" @dragenter=${e=>this._handleDragEnter(e)} @dragleave=${e=>this._handleDragLeave(e)} @dragover=${e=>this._handleDragOver(e)} @dragend=${e=>this._handleDragEnd(e)} @drop=${e=>this._handleDrop(e)}></div>
-               ${repeat(this._selectedItems, item=>item.Value, ({Name = "noName", Value = ""},index) => html`
+               ${repeat(this._selectedItems, item=>item.value, ({name = "noName", value = ""},index) => html`
                 <div class="drag-item" @dragstart=${e => this._handleDragStart(e)} draggable="true" @dragend=${e=>this._handleDragEnd(e)}>
-                  <div class="item"><span class="drag-icon">${dragIcon}</span><span class="name">${Name}</span><button type="button" tabindex="-1" @click=${this._deleteSelectedItem} data-name="${Name}" data-value="${Value}">${deleteIcon}</button></div>
+                  <div class="item"><span class="drag-icon">${dragIcon}</span><span class="name">${name}</span><button type="button" tabindex="-1" @click=${this._deleteSelectedItem} data-name="${name}" data-value="${value}">${deleteIcon}</button></div>
                 </div>
                 <div class="drag-zone" @dragenter=${e=>this._handleDragEnter(e)} @dragleave=${e=>this._handleDragLeave(e)} @dragover=${e=>this._handleDragOver(e)} @dragend=${e=>this._handleDragEnd(e)} @drop=${e=>this._handleDrop(e)}></div>
              `)}
@@ -313,12 +311,8 @@ export class CommMultipleSelector extends LitElement {
    <div class="search-container">
        <input type="text" class="search" placeholder="Search..." ${ref(this.inputRef)} @input=${this._onSearchInput} @focusin=${this._onFocusInput} @keyup=${e=>this._onKeyUp(e)} @keydown=${e=>this._onKeyDown(e)} @focusout=${this._onFocusOut}/>       
    </div>
-   <div class="filtered-container" style="${styleMap(filteredContainer)}">
-   ${when(this._filteredItems.length > 0, () => html`
-       ${repeat(this._filteredItems, ({Name = "noName",Value = ""}) => html`
-       <button type="button" class="item" data-value="${Value}" @click=${this._onClickOption} tabindex="-1">${Name}</button>
-       `)}   
-   `,()=>html`<span>No results</span>`)}        
+   <div class="filtered-container" style="${styleMap(filteredContainer)}" @option-selected=${e=>this._onClickOption(e)}>
+      <slot></slot>
    </div>
    `  
   }
@@ -332,6 +326,27 @@ export class CommMultipleSelector extends LitElement {
     :host * {
        box-sizing: border-box;
     } 
+    :host > comm-multiple-selector-option {
+      display: none;
+    }
+    ::slotted(comm-multiple-selector-option.focused), ::slotted(comm-multiple-selector-option:focus), ::slotted(comm-multiple-selector-option:hover) {
+      background-color: var(--comm-option-highlight, lavender);       
+    }
+    ::slotted(comm-multiple-selector-option:focus-visible) {  
+      outline: 2px solid var(--comm-option-focus, mediumpurple);
+    }
+    ::slotted(comm-multiple-selector-option) {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      border: none;  
+      border-bottom: var(--comm-option-border-size, 1px) solid lavender;
+      line-height: 1.1;   
+      height: calc(var(--comm-element-lineheight, 2.5rem) - var(--comm-option-border-size, 1px));   
+      background-color: #fff;
+      cursor: pointer;
+      text-align: left; 
+    }
     svg {
        display: block;         
     }  
@@ -382,26 +397,7 @@ export class CommMultipleSelector extends LitElement {
     .results button:hover {
         color: var(--comm-delete-color, red);
     }  
-    .filtered-container .item {
-      display: block;
-      width: 100%;
-      border: none;  
-      border-bottom: var(--comm-option-border-size, 1px) solid lavender;
-      line-height: 1.1;   
-      height: calc(var(--comm-element-lineheight, 2.5rem) - var(--comm-option-border-size, 1px));   
-      background-color: #fff;
-      cursor: pointer;
-      text-align: left;        
-    }
-    .filtered-container .item:hover {
-      background-color: var(--comm-option-highlight, lavender);   
-    }
-    .filtered-container .item:focus,  .filtered-container .item.focused{
-        background-color: var(--comm-option-highlight, lavender);       
-    }
-    .filtered-container .item:focus-visible {
-        outline: 2px solid var(--comm-option-focus, mediumpurple);
-    }
+    
     .filtered-container {
         border: var(--comm-filtered-border, 1px solid lightgray);
         padding: 0.5rem;
@@ -413,7 +409,8 @@ export class CommMultipleSelector extends LitElement {
         max-height: calc(calc(var(--comm-element-lineheight, 2.5rem) - var(--comm-option-border-size, 1px)) * 10);
         overflow: auto;
         width: 100%;
-        
+        background-color: #fff; 
+        z-index: 2;
         
     }
     .drag-zone {
@@ -436,4 +433,4 @@ export class CommMultipleSelector extends LitElement {
   `
 }
 
-customElements.get('comm-multiple-selector') || customElements.define('comm-multiple-selector', CommMultipleSelector);
+customElements.get('comm-multiple-selector-raw') || customElements.define('comm-multiple-selector-raw', CommMultipleSelectorRaw);

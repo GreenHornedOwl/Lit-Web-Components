@@ -9,6 +9,8 @@
 <!--    <script type="module" src="/src/my-element.js"></script>-->
     <script type="module" src="/src/comm-quantity.js"></script>
     <script type="module" src="/src/comm-multiple-selector"></script>
+    <script type="module" src="/src/comm-multiple-selector-raw"></script>
+    <script type="module" src="/src/comm-multiple-selector-option"></script>
 <!--    <script type="module" src="/src/comm-add-to-cart.js"></script>-->
   </head>
   <body>
@@ -17,8 +19,16 @@
 <!--    <div>-->
 <!--      <comm-add-to-cart value="2" min="2" max="20" step="2" stepper="true" quantity-enabled="true"></comm-add-to-cart>-->
 <!--    </div>-->
+  <!-- <comm-multiple-selector name="FieldName" selected="10,20" value="10,20"></comm-multiple-selector> -->
     <div>
-      <comm-multiple-selector name="FieldName" selected="10,20" value="10,20"></comm-multiple-selector>
+      <comm-multiple-selector-raw name="FieldName" selected="10,20" value="10,20">
+        <comm-multiple-selector-option class="item" label="10" value="10" tabindex="1">10</comm-multiple-selector-option>
+        <comm-multiple-selector-option class="item" label="20" value="20" tabindex="1">20</comm-multiple-selector-option>
+        <comm-multiple-selector-option class="item" label="30" value="30" tabindex="1">30</comm-multiple-selector-option>
+        <comm-multiple-selector-option class="item" label="40" value="40" tabindex="1">40</comm-multiple-selector-option>  
+      </comm-multiple-selector-raw>
+      
+      
       
     </div>
   <script>

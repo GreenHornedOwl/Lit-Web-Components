@@ -75,6 +75,12 @@ export class CommMultipleSelectorRaw extends LitElement {
       node.style.display = "none";
     })
   }
+
+  updated(changedProperties) {
+    if(changedProperties.has('value')){
+      this.internals.setFormValue(this.value);     
+    }
+  }
   
   willUpdate(changedProperties) {
     // only need to check changed properties for an expensive computation.

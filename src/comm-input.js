@@ -136,8 +136,7 @@ class COMMInput extends LitElement {
           transition: var(--comm-transition, all 0.15s ease-out);
 
           .focused & {
-              transform: translateY(calc(0rem - var(--comm-placeholder-size, 0.75rem)));
-              opacity: 0.4;
+              transform: translateY(calc(0rem - var(--comm-placeholder-size, 0.75rem)));              
           }
       }
       

@@ -11,6 +11,7 @@
     <script type="module" src="/src/comm-multiple-selector"></script>
     <script type="module" src="/src/comm-multiple-selector-raw"></script>
     <script type="module" src="/src/comm-multiple-selector-option"></script>
+    <script type="module" src="/src/comm-input"></script>
 <!--    <script type="module" src="/src/comm-add-to-cart.js"></script>-->
   </head>
   <body>
@@ -28,7 +29,14 @@
         <comm-multiple-selector-option class="item" label="30" value="30" tabindex="1">30</comm-multiple-selector-option>
         <comm-multiple-selector-option class="item" label="40" value="40" tabindex="1">40</comm-multiple-selector-option>  
       </comm-multiple-selector-raw>
-    </form>
+      <div style="margin: 1rem;">
+        <comm-input type="text" name="name" id="name" class="test" label="Name" value="Malfurion Stormrage" readonly></comm-input>
+        <comm-input type="email" name="email" id="email" class="test" label="Email" required></comm-input>
+        <comm-input type="text" name="number" id="number" class="test" label="Number" pattern="[0-9]*" required></comm-input>
+        <comm-input type="number" name="length" id="length" class="test" label="Length" value="1" step="0.5" min="1" max="200.50" size="3" required disabled></comm-input>
+        <comm-input type="password" name="password" id="password" class="test" label="Password" required></comm-input>
+      </div>
+      </form>
       
       
     </div>

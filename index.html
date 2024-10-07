@@ -11,7 +11,9 @@
     <script type="module" src="/src/comm-multiple-selector"></script>
     <script type="module" src="/src/comm-multiple-selector-raw"></script>
     <script type="module" src="/src/comm-multiple-selector-option"></script>
-    <script type="module" src="/src/comm-input"></script>
+    <script type="module" src="/src/comm-input.js"></script>
+    <script type="module" src="/src/comm-select.js"></script>
+    <script type="module" src="/src/content/comm-text.js"></script>
 <!--    <script type="module" src="/src/comm-add-to-cart.js"></script>-->
   </head>
   <body>
@@ -23,6 +25,7 @@
   <!-- <comm-multiple-selector name="FieldName" selected="10,20" value="10,20"></comm-multiple-selector> -->
     <div>
       <form id="form">
+        
       <comm-multiple-selector-raw name="FieldName" selected="10,20" value="10,20">
         <comm-multiple-selector-option class="item" label="10" value="10" tabindex="1">10</comm-multiple-selector-option>
         <comm-multiple-selector-option class="item" label="20" value="20" tabindex="1">20</comm-multiple-selector-option>
@@ -37,8 +40,18 @@
         <comm-input type="password" name="password" id="password" class="test" label="Password" required></comm-input>
       </div>
       </form>
-      
-      
+    </div>
+<!--    <div>-->
+<!--      <comm-select name="FieldName" value="10">-->
+<!--        <option value="">Select an option</option>-->
+<!--        <option value="1">Option 1</option>-->
+<!--        <option value="2">Option 2</option>-->
+<!--        <option value="3">Option 3</option>-->
+<!--      </comm-select>-->
+<!--    </div>-->
+    <div>
+      COMM-TEXT
+      <comm-text></comm-text>
     </div>
   <script>
     document.querySelector(".focus")?.addEventListener("click", ()=>{

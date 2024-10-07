@@ -1,11 +1,8 @@
 ﻿import { LitElement, css, html } from 'lit';
-import {repeat} from 'lit/directives/repeat.js';
-import {styleMap} from 'lit/directives/style-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {unsafeSVG} from 'lit/directives/unsafe-svg.js';
 import {ref,createRef} from 'lit/directives/ref.js';
 import {when} from 'lit/directives/when.js';
-import {guard} from 'lit/directives/guard.js';
 import {classMap} from 'lit/directives/class-map.js';
 
 
@@ -136,7 +133,7 @@ class COMMInput extends LitElement {
           transition: var(--comm-transition, all 0.15s ease-out);
 
           .focused & {
-              transform: translateY(calc(0rem - var(--comm-placeholder-size, 0.75rem)));              
+              transform: translateY(calc(0rem - var(--comm-placeholder-size, 0.75rem)));               
           }
       }
       
